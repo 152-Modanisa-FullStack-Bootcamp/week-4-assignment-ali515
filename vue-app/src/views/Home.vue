@@ -1,18 +1,27 @@
 <template>
-  <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <div id="home">
+    <div id="video-container">
+      <video-list v-for="video in videos" :key="video.id" :video="video" />
+    </div>
   </div>
 </template>
 
 <script>
-// @ is an alias to /src
-import HelloWorld from '@/components/HelloWorld.vue'
+import VideoList from "../components/VideoList.vue";
+import { mapGetters, mapActions } from "vuex";
+import { GETTERS_VIDEOS, ACTIONS_GET_VIDEOS } from "../store";
 
 export default {
-  name: 'Home',
-  components: {
-    HelloWorld
-  }
-}
+  components: { VideoList },
+  name: "Home",
+  computed: {
+    ...mapGetters([GETTERS_VIDEOS]),
+  },
+  methods: {
+    ...mapActions([ACTIONS_GET_VIDEOS]),
+  },
+  async created() {
+    await this[ACTIONS_GET_VIDEOS]();
+  },
+};
 </script>
