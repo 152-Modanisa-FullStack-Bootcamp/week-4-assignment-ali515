@@ -8,6 +8,12 @@ const API = {
     const { data } = await axios.get(GET_VIDEOS_URL);
     return data || [];
   },
+  getVideoById: async function (videoId) {
+    const { data } = await axios.get(GET_VIDEOS_URL, {
+      query: { id: videoId },
+    });
+    return data;
+  },
 };
 
 export default API;

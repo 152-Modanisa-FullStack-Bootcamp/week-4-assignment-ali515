@@ -1,7 +1,8 @@
 const { Given, When, Then } = require("cucumber");
 const openUrl = require("../support/action/openUrl");
+const waitFor = require("../support/action/waitFor");
 const waitForSelector = require("../support/action/waitForSelector");
-const checkContainsText = require("../support/check/checkContainsText");
+const checkUrlContains = require("../support/check/checkUrlContains");
 
 Given("that User goes to Video Site Project's HomePage", async function () {
   await openUrl.call(this, "/");
@@ -21,26 +22,54 @@ Then("User can see some of videos' title like", async function ({ rawTable }) {
   );
   if (elements.length !== titles.length) throw new Error();
 });
-/*
-Given('that User is on Video Site Project\'s HomePage', async function () {
-    await openUrl.call(this, '/')
+
+Given("that User is on Video Site Project's HomePage", async function () {
+  await openUrl.call(this, "/");
 });
 
-When('User clicks {string} video', async function (title) {
-    console.log(title)
-    throw new Error()
-})
+When("User clicks {string} video", async function (title) {
+  const selector = ".video .title";
+  const videoId = await this.page.$$eval(
+    selector,
+    (elements, title) => {
+      const titleElement = elements.find((x) => x.innerText === title);
+      const videoElement = titleElement.closest(".video");
+      const id = videoElement.dataset["id"];
+      videoElement.click();
+      return id;
+    },
+    title
+  );
+  this.videoUrl = `/watch/${videoId}`;
+});
 
-Then('User should see watch url correctly', async function () {
-    throw new Error();
-})
+Then("User should see watch url correctly", async function () {
+  const selector = "#watch";
+  await checkUrlContains.call(this, false, this.videoUrl);
+  await waitForSelector.call(this, selector);
+});
 
-When('User hovers {string} video', async function (title) {
-    console.log(title)
-    throw new Error();
-})
+When("User hovers {string} video", async function (title) {
+  this.hoverTest = {
+    hoverImage: "",
+    coverImage: "",
+    image: "",
+  };
+  const selector = `.video[data-title*="${title}"] img`;
+  this.hoverTest.hoverImage = await this.page.$eval(
+    selector,
+    (element) => element.dataset["hoverImage"]
+  );
+  if (!this.hoverTest.hoverImage) throw new Error("data-hover-image not found");
+  const img = await this.page.$(selector);
+  this.hoverTest.coverImage = await (await img.getProperty("src")).jsonValue();
+  await img.hover();
+  this.hoverTest.image = await (await img.getProperty("src")).jsonValue();
+});
 
-Then('User should see hovered image', async function () {
-    throw new Error();
-})
-*/
+Then("User should see hovered image", async function () {
+  const { hoverImage, image, coverImage } = this.hoverTest;
+  if (!hoverImage || !image || !coverImage)
+    throw new Error("Test invalid");
+  else if (hoverImage !== image) throw new Error("Hover Test invalid");
+});

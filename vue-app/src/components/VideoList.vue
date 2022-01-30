@@ -1,6 +1,7 @@
 <template>
-  <div class="video">
-      <h3 class="title">{{ video.title }}</h3>
+  <div class="video" :data-id="id" :data-title="title" @click="gotoWatch" @mouseover="isHover = true" @mouseleave="isHover = false">
+    <img :src="image" class="image" :data-hover-image="video.hoverImage" />
+    <h3 class="title">{{ video.title }}</h3>
   </div>
 </template>
 
@@ -21,6 +22,31 @@ export default {
       description: String,
     },
   },
+  data() {
+    return {
+      isHover: false
+    }
+  },
+  computed: {
+    id() {
+      return this.video.id
+    },
+    image() {
+      return this.isHover
+        ? this.video.hoverImage
+        : this.video.coverImage
+    },
+    title() {
+      return this.video.title
+    }
+  },
+  methods: {
+    gotoWatch() {
+      console.log(this);
+      const id = this.video.id;
+      this.$router.push({ name: 'Watch', params: { id } })
+    }
+  }
 };
 </script>
 
